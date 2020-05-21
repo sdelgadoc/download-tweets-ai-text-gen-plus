@@ -43,6 +43,54 @@ def download_tweets(
 ):
     """Download public Tweets from a given Twitter account
     into a format suitable for training with AI text generation tools.
+    :param username: Twitter @ username to gather tweets or .txt file name with multiple usernames
+    :param limit: # of tweets to gather; None for all tweets.
+    :param include_replies: Whether to include replies to other tweets.
+    :param strip_usertags: Whether to remove user tags from the tweets.
+    :param strip_hashtags: Whether to remove hashtags from the tweets.
+    :param include_links: Whether to include tweets with links.
+    """
+
+    # Validate that a username or .txt file name is specified
+    assert username, "You must specify a username to download tweets from."
+    
+    # Create an empty list of usernames for which to dowload tweets
+    usernames = []
+    filename = username
+	
+    # Get the file's current directory
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    
+    # If username is a .txt file, append all usernames to usernames list
+    if username[-4:] == ".txt":
+        # Open username file and copy usernames to usernames list
+        
+        pathfilename = os.path.join(dir_path, filename)
+        with open(pathfilename, 'r') as f:
+            [usernames.append(username.rstrip('\n')) for username in f]
+                
+    
+    #If username is not a .txt file, append username to usernames list
+    else:
+        filename = username
+        usernames.append(username)
+    
+    # Download tweets for all usernames and write to file
+    with open(dir_path + '/{}_tweets.csv'.format(filename), 'w', encoding='utf8') as f:
+        w = csv.writer(f)
+        w.writerow(['tweets']) # gpt-2-simple expects a CSV header by default
+        
+        
+        for username in usernames:
+            tweets = download_account_tweets(username, limit, include_replies, strip_usertags, strip_hashtags, include_links)
+            
+            [w.writerow([tweet]) for tweet in tweets]
+    
+
+def download_account_tweets(username=None, limit=None, include_replies=False,
+                    strip_usertags=False, strip_hashtags=False, 
+                    include_links=False):
+    """Download public Tweets from a given Twitter account and return as a list
     :param username: Twitter @ username to gather tweets.
     :param limit: # of tweets to gather; None for all tweets.
     :param include_replies: Whether to include replies to other tweets.
@@ -78,41 +126,22 @@ def download_tweets(
     if strip_hashtags:
         pattern += r"|#[a-zA-Z0-9_]+"
 
+    # Create an empty list of tweets to output
+    tweets_output = []
+    
     # Create an empty file to store pagination id
     with open(".temp", "w", encoding="utf-8") as f:
         f.write(str(-1))
 
     print("Retrieving tweets for @{}...".format(username))
 
-    with open("{}_tweets.csv".format(username), "w", encoding="utf8") as f:
-        w = csv.writer(f)
-        w.writerow(["tweets"])  # gpt-2-simple expects a CSV header by default
+    pbar = tqdm(range(limit),
+                desc="Oldest Tweet")
+    for i in range(limit // 40):
+        tweet_data = []
 
-        pbar = tqdm(range(limit), desc="Oldest Tweet")
-        for i in range(limit // 40):
-            tweet_data = []
-
-            # twint may fail; give it up to 5 tries to return tweets
-            for _ in range(0, 4):
-                if len(tweet_data) == 0:
-                    c = twint.Config()
-                    c.Store_object = True
-                    c.Hide_output = True
-                    c.Username = username
-                    c.Limit = 40
-                    c.Resume = ".temp"
-
-                    c.Store_object_tweets_list = tweet_data
-
-                    twint.run.Search(c)
-
-                    # If it fails, sleep before retry.
-                    if len(tweet_data) == 0:
-                        sleep(1.0)
-                else:
-                    continue
-
-            # If still no tweets after multiple tries, we're done
+        # twint may fail; give it up to 5 tries to return tweets
+        for _ in range(0, 4):
             if len(tweet_data) == 0:
                 c = twint.Config()
                 c.Store_object = True
@@ -123,37 +152,48 @@ def download_tweets(
 
                 c.Store_object_tweets_list = tweet_data
 
-            if not include_replies:
-                tweets = [
-                    re.sub(pattern, "", tweet.tweet).strip()
-                    for tweet in tweet_data
-                    if not is_reply(tweet)
-                ]
+                twint.run.Search(c)
 
-                # On older tweets, if the cleaned tweet starts with an "@",
-                # it is a de-facto reply.
-                for tweet in tweets:
-                    if tweet != "" and not tweet.startswith("@"):
-                        w.writerow([tweet])
+                # If it fails, sleep before retry.
+                if len(tweet_data) == 0:
+                    sleep(15.0)
             else:
-                tweets = [
-                    re.sub(pattern, "", tweet.tweet).strip() for tweet in tweet_data
-                ]
+                continue
 
-                for tweet in tweets:
-                    if tweet != "":
-                        w.writerow([tweet])
+        # If still no tweets after multiple tries, we're done
+        if len(tweet_data) == 0:
+            break
 
-            # Update progress bar as long as we collected tweets
-            if len(tweet_data) > 0:
-                pbar.update(40)
-                oldest_tweet = datetime.utcfromtimestamp(
-                    tweet_data[-1].datetime / 1000.0
-                ).strftime("%Y-%m-%d %H:%M:%S")
-                pbar.set_description("Oldest Tweet: " + oldest_tweet)
+        if not include_replies:
+            tweets = [re.sub(pattern, '', tweet.tweet).strip()
+                      for tweet in tweet_data
+                      if not is_reply(tweet)]
 
+            # On older tweets, if the cleaned tweet starts with an "@",
+            # it is a de-facto reply.
+            for tweet in tweets:
+                if tweet != '' and not tweet.startswith('@'):
+                    tweets_output.append([tweet])
+        else:
+            tweets = [re.sub(pattern, '', tweet.tweet).strip()
+                      for tweet in tweet_data]
+
+            for tweet in tweets:
+                if tweet != '':
+                    tweets_output.append([tweet])
+
+        pbar.update(40)
+
+        oldest_tweet = datetime.utcfromtimestamp(
+            tweet_data[-1].datetime / 1000.0
+        ).strftime("%Y-%m-%d %H:%M:%S")
+        pbar.set_description("Oldest Tweet: " + oldest_tweet)
+            
     pbar.close()
     os.remove(".temp")
+    
+    # Return list of tweets
+    return tweets_output
 
 
 if __name__ == "__main__":
