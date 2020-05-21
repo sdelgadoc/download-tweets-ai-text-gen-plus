@@ -173,14 +173,14 @@ def download_account_tweets(username=None, limit=None, include_replies=False,
             # it is a de-facto reply.
             for tweet in tweets:
                 if tweet != '' and not tweet.startswith('@'):
-                    tweets_output.append([tweet])
+                    tweets_output.append(tweet)
         else:
             tweets = [re.sub(pattern, '', tweet.tweet).strip()
                       for tweet in tweet_data]
 
             for tweet in tweets:
                 if tweet != '':
-                    tweets_output.append([tweet])
+                    tweets_output.append(tweet)
 
         pbar.update(40)
 
