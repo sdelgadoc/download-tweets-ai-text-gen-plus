@@ -100,23 +100,15 @@ def download_account_tweets(username=None, limit=None, include_replies=False,
     :return tweets: List of tweets from the Twitter account
     """
 
-    # If a limit is specificed, validate that it is a multiple of 40
+    # Validate that it is a multiple of 40; set total number of tweets
     if limit:
         assert limit % 40 == 0, "`limit` must be a multiple of 40."
+        
+        pbar = tqdm(range(limit), desc="Oldest Tweet")
 
-    # If no limit specifed, estimate the total number of tweets from profile.
+    # If no limit specifed, don't specify total number of tweet
     else:
-        c_lookup = twint.Config()
-        c_lookup.Username = username
-        c_lookup.Store_object = True
-        c_lookup.Hide_output = True
-        if include_links is True:
-            c_lookup.Links = "include"
-        else:
-            c_lookup.Links = "exclude"
-
-        twint.run.Lookup(c_lookup)
-        limit = twint.output.users_list[-1].tweets
+        pbar = tqdm()
 
     pattern = r"http\S+|pic\.\S+|\xa0|…"
 
@@ -135,9 +127,15 @@ def download_account_tweets(username=None, limit=None, include_replies=False,
 
     print("Retrieving tweets for @{}...".format(username))
 
-    pbar = tqdm(range(limit),
-                desc="Oldest Tweet")
-    for i in range(limit // 40):
+    # Set the loop's iterator
+    i = 0
+    # Iterate forever, and break based on two conditions below
+    while(True):
+        
+        # If a limit is specified, break once it's reached
+        if limit:
+            if i >= (limit // 40): break
+        
         tweet_data = []
 
         # twint may fail; give it up to 5 tries to return tweets
@@ -188,6 +186,9 @@ def download_account_tweets(username=None, limit=None, include_replies=False,
             tweet_data[-1].datetime / 1000.0
         ).strftime("%Y-%m-%d %H:%M:%S")
         pbar.set_description("Oldest Tweet: " + oldest_tweet)
+        
+        # Increase the loop's iterator
+        i = i +1
             
     pbar.close()
     os.remove(".temp")
