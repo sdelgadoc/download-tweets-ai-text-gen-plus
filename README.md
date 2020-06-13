@@ -74,11 +74,9 @@ gpt2.generate(sess,
 * The download will likely end much earlier than the theoretical limit (inferred from the user profile) as the limit includes retweets/replies/whatever cache shennanigans Twitter is employing.
 * The legalities of distributing downloaded tweets is ambigious, therefore it's recommended avoiding commiting raw Twitter data to GitHub, and is the reason examples of such data is not included in this repo. (AI-generated tweets themselves likely fall under derivative work/parody protected by Fair Use)
 
-## Maintainer/Creator
+## Maintainer
 
-Max Woolf ([@minimaxir](https://minimaxir.com))
-
-*Max's open-source projects are supported by his [Patreon](https://www.patreon.com/minimaxir) and [GitHub Sponsors](https://github.com/sponsors/minimaxir). If you found this project helpful, any monetary contributions to the Patreon are appreciated and will be put to good creative use.*
+Santiago Delgado  ([@santiagodc](https://twitter.com/santiagodc))
 
 ## License
 
