@@ -7,31 +7,11 @@ import logging
 from datetime import datetime
 from time import sleep
 import os
+from textblob import TextBlob
 
 # Surpress random twint warnings
 logger = logging.getLogger()
 logger.disabled = True
-
-
-def is_reply(tweet):
-    """
-    Determines if the tweet is a reply to another tweet.
-    Requires somewhat hacky heuristics since not included w/ twint
-    """
-
-    # If not a reply to another user, there will only be 1 entry in reply_to
-    if len(tweet.reply_to) == 1:
-        return False
-
-    # Check to see if any of the other users "replied" are in the tweet text
-    users = tweet.reply_to[1:]
-    conversations = [user["username"] in tweet.tweet for user in users]
-
-    # If any if the usernames are not present in text, then it must be a reply
-    if sum(conversations) < len(users):
-        return True
-    return False
-
 
 def download_tweets(
     username=None,
@@ -52,7 +32,7 @@ def download_tweets(
     """
 
     # Validate that a username or .txt file name is specified
-    assert username, "You must specify a username to download tweets from."
+    assert username, "You must specify a username or file name"
     
     # Create an empty list of usernames for which to dowload tweets
     usernames = []
@@ -195,6 +175,109 @@ def download_account_tweets(username=None, limit=None, include_replies=False,
     
     # Return list of tweets
     return tweets_output
+
+
+def format_text(tweet_object, strip_usertags = False, strip_hashtags = False,
+                 sentiment = 0, text_format = "simple"):
+    """
+    Format a tweet's text based on certain parameters for output
+    """
+    
+    tweet_text = ""
+    
+    cleaned_text = clean_text(tweet_object.tweet,strip_usertags, 
+                            strip_hashtags)
+    
+    if text_format == "simple":
+        # If sentiment is divided into 3 categories
+        if sentiment == 3:
+            blob = TextBlob(cleaned_text)
+            
+            if blob.sentiment.polarity < 0:
+                tweet_text += "NEGATIVE\n"
+            elif blob.sentiment.polarity == 0:
+                tweet_text += "NEUTRAL\n"
+            else:
+                tweet_text += "POSITIVE\n"
+        # If sentiment is divided into 5 categories
+        elif sentiment == 5:
+            blob = TextBlob(cleaned_text)
+            
+            if blob.sentiment.polarity < -0.5:
+                tweet_text += "VERY NEGATIVE\n"
+            elif blob.sentiment.polarity < 0:
+                tweet_text += "NEGATIVE\n"
+            elif blob.sentiment.polarity == 0:
+                tweet_text += "NEUTRAL\n"
+            elif blob.sentiment.polarity > 0.5:
+                tweet_text += "VERY POSITIVE\n"
+            else:
+                tweet_text += "POSITIVE\n"
+        # If sentiment is divided into 7 categories
+        elif sentiment == 7:
+            blob = TextBlob(cleaned_text)
+            
+            if blob.sentiment.polarity < -2/3:
+                tweet_text += "EXTREMELY NEGATIVE\n"
+            elif blob.sentiment.polarity < -1/3:
+                tweet_text += "VERY NEGATIVE\n"
+            elif blob.sentiment.polarity < 0:
+                tweet_text += "NEGATIVE\n"
+            elif blob.sentiment.polarity == 0:
+                tweet_text += "NEUTRAL\n"
+            elif blob.sentiment.polarity > 2/3:
+                tweet_text += "EXTREMELY POSITIVE\n"
+            elif blob.sentiment.polarity > 1/3:
+                tweet_text += "VERY POSITIVE\n"
+            else:
+                tweet_text += "POSITIVE\n"
+        
+        tweet_text += cleaned_text
+        
+    return(tweet_text)
+
+
+def clean_text(tweet_text, strip_usertags = False, strip_hashtags = False):
+    """
+    Remove parts of a tweet's text based on certain parameters
+    """
+    
+    # Strip all the leading usertags
+    while re.search(r"^@[a-zA-Z0-9_]+", tweet_text):
+        tweet_text = re.sub(r"^@[a-zA-Z0-9_]+", '', tweet_text).strip()
+
+    # Regex pattern for removing URL's
+    pattern = r"http\S+|pic\.\S+|\xa0|…"
+    
+    if strip_usertags:
+        pattern += r"|@[a-zA-Z0-9_]+"
+    
+    if strip_hashtags:
+        pattern += r"|#[a-zA-Z0-9_]+"
+    
+    tweet_text = re.sub(pattern, '', tweet_text).strip()
+    
+    return tweet_text
+
+
+def is_reply(tweet):
+    """
+    Determines if the tweet is a reply to another tweet.
+    Requires somewhat hacky heuristics since not included w/ twint
+    """
+
+    # If not a reply to another user, there will only be 1 entry in reply_to
+    if len(tweet.reply_to) == 1:
+        return False
+
+    # Check to see if any of the other users "replied" are in the tweet text
+    users = tweet.reply_to[1:]
+    conversations = [user["username"] in tweet.tweet for user in users]
+
+    # If any if the usernames are not present in text, then it must be a reply
+    if sum(conversations) < len(users):
+        return True
+    return False
 
 
 if __name__ == "__main__":
