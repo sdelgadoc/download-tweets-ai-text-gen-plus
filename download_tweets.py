@@ -143,7 +143,6 @@ def download_account_tweets(username=None, limit=None, include_replies=False,
             break
 
         if not include_replies:
-            tweets = [re.sub(pattern, '', tweet.tweet).strip()
                       for tweet in tweet_data
                       if not is_reply(tweet)]
 
@@ -153,7 +152,6 @@ def download_account_tweets(username=None, limit=None, include_replies=False,
                 if tweet != '' and not tweet.startswith('@'):
                     tweets_output.append(tweet)
         else:
-            tweets = [re.sub(pattern, '', tweet.tweet).strip()
                       for tweet in tweet_data]
 
             for tweet in tweets:
@@ -162,7 +160,6 @@ def download_account_tweets(username=None, limit=None, include_replies=False,
 
         pbar.update(40)
 
-        oldest_tweet = datetime.utcfromtimestamp(
             tweet_data[-1].datetime / 1000.0
         ).strftime("%Y-%m-%d %H:%M:%S")
         pbar.set_description("Oldest Tweet: " + oldest_tweet)
@@ -177,64 +174,77 @@ def download_account_tweets(username=None, limit=None, include_replies=False,
     return tweets_output
 
 
-def format_text(tweet_object, strip_usertags = False, strip_hashtags = False,
                  sentiment = 0, text_format = "simple"):
     """
     Format a tweet's text based on certain parameters for output
     """
     
-    tweet_text = ""
     
     cleaned_text = clean_text(tweet_object.tweet,strip_usertags, 
                             strip_hashtags)
     
+    # 'simple' text format only returns the tweet
     if text_format == "simple":
-        # If sentiment is divided into 3 categories
-        if sentiment == 3:
-            blob = TextBlob(cleaned_text)
-            
-            if blob.sentiment.polarity < 0:
-                tweet_text += "NEGATIVE\n"
-            elif blob.sentiment.polarity == 0:
-                tweet_text += "NEUTRAL\n"
-            else:
-                tweet_text += "POSITIVE\n"
-        # If sentiment is divided into 5 categories
-        elif sentiment == 5:
-            blob = TextBlob(cleaned_text)
-            
-            if blob.sentiment.polarity < -0.5:
-                tweet_text += "VERY NEGATIVE\n"
-            elif blob.sentiment.polarity < 0:
-                tweet_text += "NEGATIVE\n"
-            elif blob.sentiment.polarity == 0:
-                tweet_text += "NEUTRAL\n"
-            elif blob.sentiment.polarity > 0.5:
-                tweet_text += "VERY POSITIVE\n"
-            else:
-                tweet_text += "POSITIVE\n"
-        # If sentiment is divided into 7 categories
-        elif sentiment == 7:
-            blob = TextBlob(cleaned_text)
-            
-            if blob.sentiment.polarity < -2/3:
-                tweet_text += "EXTREMELY NEGATIVE\n"
-            elif blob.sentiment.polarity < -1/3:
-                tweet_text += "VERY NEGATIVE\n"
-            elif blob.sentiment.polarity < 0:
-                tweet_text += "NEGATIVE\n"
-            elif blob.sentiment.polarity == 0:
-                tweet_text += "NEUTRAL\n"
-            elif blob.sentiment.polarity > 2/3:
-                tweet_text += "EXTREMELY POSITIVE\n"
-            elif blob.sentiment.polarity > 1/3:
-                tweet_text += "VERY POSITIVE\n"
-            else:
-                tweet_text += "POSITIVE\n"
+        cleaned_text = clean_text(tweet_text,strip_usertags, strip_hashtags)
         
-        tweet_text += cleaned_text
+        # If we should include sentiment information
+        if sentiment > 0:
+            output_tweet_text += sentiment_text(cleaned_text, sentiment) + "\n"
         
-    return(tweet_text)
+        output_tweet_text += cleaned_text
+        
+    return(output_tweet_text)
+
+
+def sentiment_text(tweet_text, sentiment = 0):
+    """
+    Return's a string describing the tweet text's sentiment
+    """
+    
+    output_tweet_text = ""
+    
+    blob = TextBlob(tweet_text)
+    
+    # If sentiment is divided into 3 categories
+    if sentiment == 3:
+        if blob.sentiment.polarity < 0:
+            output_tweet_text += "NEGATIVE"
+        elif blob.sentiment.polarity == 0:
+            output_tweet_text += "NEUTRAL"
+        else:
+            output_tweet_text += "POSITIVE"
+    
+    # If sentiment is divided into 5 categories
+    elif sentiment == 5:
+        if blob.sentiment.polarity < -0.5:
+            output_tweet_text += "VERY NEGATIVE"
+        elif blob.sentiment.polarity < 0:
+            output_tweet_text += "NEGATIVE"
+        elif blob.sentiment.polarity == 0:
+            output_tweet_text += "NEUTRAL"
+        elif blob.sentiment.polarity > 0.5:
+            output_tweet_text += "VERY POSITIVE"
+        else:
+            output_tweet_text += "POSITIVE"
+    
+    # If sentiment is divided into 7 categories
+    elif sentiment == 7:
+        if blob.sentiment.polarity < -2/3:
+            output_tweet_text += "EXTREMELY NEGATIVE"
+        elif blob.sentiment.polarity < -1/3:
+            output_tweet_text += "VERY NEGATIVE"
+        elif blob.sentiment.polarity < 0:
+            output_tweet_text += "NEGATIVE"
+        elif blob.sentiment.polarity == 0:
+            output_tweet_text += "NEUTRAL"
+        elif blob.sentiment.polarity > 2/3:
+            output_tweet_text += "EXTREMELY POSITIVE"
+        elif blob.sentiment.polarity > 1/3:
+            output_tweet_text += "VERY POSITIVE"
+        else:
+            output_tweet_text += "POSITIVE"
+    
+    return output_tweet_text + ", " + str(blob.sentiment.polarity)
 
 
 def clean_text(tweet_text, strip_usertags = False, strip_hashtags = False):
@@ -277,6 +287,7 @@ def is_reply(tweet):
     # If any if the usernames are not present in text, then it must be a reply
     if sum(conversations) < len(users):
         return True
+    
     return False
 
 
