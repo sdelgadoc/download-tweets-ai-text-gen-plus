@@ -77,7 +77,7 @@ gpt2.generate(sess,
 ## Maintainer
 
 Santiago Delgado  ([@santiagodc](https://twitter.com/santiagodc))
-based on ([download-tweets-ai-text-gen](https://github.com/minimaxir/download-tweets-ai-text-gen)) by ([@minimaxir](https://github.com/minimaxir))
+based on [download-tweets-ai-text-gen](https://github.com/minimaxir/download-tweets-ai-text-gen) by [@minimaxir](https://github.com/minimaxir)
 
 ## License
 
