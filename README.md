@@ -1,4 +1,4 @@
-# download-tweets-ai-text-gen
+# download-tweets-ai-text-gen-plus
 
 A small Python 3 script to download public Tweets from a given Twitter account into a format suitable for AI text generation tools (such as [gpt-2-simple](https://github.com/minimaxir/gpt-2-simple) for finetuning [GPT-2](https://openai.com/blog/better-language-models/)).
 
@@ -77,6 +77,7 @@ gpt2.generate(sess,
 ## Maintainer
 
 Santiago Delgado  ([@santiagodc](https://twitter.com/santiagodc))
+based on ([download-tweets-ai-text-gen](https://github.com/minimaxir/download-tweets-ai-text-gen)) by ([@minimaxir](https://github.com/minimaxir))
 
 ## License
 
