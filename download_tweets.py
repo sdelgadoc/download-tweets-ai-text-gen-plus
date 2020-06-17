@@ -8,6 +8,8 @@ from datetime import datetime
 from time import sleep
 import os
 from textblob import TextBlob
+from keys import keys
+import tweepy
 
 # Surpress random twint warnings
 logger = logging.getLogger()
@@ -39,6 +41,13 @@ def download_tweets(
     # Create an empty list of usernames for which to dowload tweets
     usernames = []
     filename = username
+    api = None
+	
+	# Authenticate if the text format requires the Twitter API
+    if text_format == "reply":
+        auth = tweepy.OAuthHandler(keys["consumer_key"], keys["consumer_secret"])
+        auth.set_access_token(keys["access_token"], keys["access_token_secret"])
+        api = tweepy.API(auth)
 	
     # Get the file's current directory
     dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -64,7 +73,10 @@ def download_tweets(
         
         
         for username in usernames:
-            tweets = download_account_tweets(username, limit, include_replies, strip_usertags, strip_hashtags, include_links, sentiment, text_format)
+            tweets = download_account_tweets(username, limit, include_replies, 
+                                             strip_usertags, strip_hashtags, 
+                                             include_links, sentiment, 
+                                             text_format, api)
             
             [w.writerow([tweet]) for tweet in tweets]
     
@@ -76,7 +88,8 @@ def download_account_tweets(username=None,
                             strip_usertags=False,
                             strip_hashtags=False,
                             sentiment = 0,
-                            text_format = "simple"):
+                            text_format = "simple",
+                            api = None):
     """Download public Tweets from a given Twitter account and return as a list
     :param username: Twitter @ username to gather tweets.
     :param limit: # of tweets to gather; None for all tweets.
@@ -134,7 +147,7 @@ def download_account_tweets(username=None,
 
                 # If it fails, sleep before retry.
                 if len(tweet_data) == 0:
-                    sleep(15.0)
+                    sleep(2)
             else:
                 continue
 
@@ -148,7 +161,7 @@ def download_account_tweets(username=None,
                 if not is_reply(tweet):
                     tweet_text = format_text(tweet, strip_usertags,
                                              strip_hashtags,sentiment,
-                                             text_format)
+                                             text_format, api)
             
                     # Do not append the tweet if the tweet_text is empty
                     if tweet_text != "":
@@ -158,7 +171,7 @@ def download_account_tweets(username=None,
             for tweet in tweet_data:
                 tweet_text = format_text(tweet, strip_usertags,
                                          strip_hashtags,sentiment,
-                                         text_format)
+                                         text_format, api)
         
                 # Do not append the tweet if the tweet_text is empty
                 if tweet_text != "":
@@ -183,7 +196,7 @@ def download_account_tweets(username=None,
 
 
 def format_text(tweet_object, strip_usertags = False, strip_hashtags = False,
-                 sentiment = 0, text_format = "simple"):
+                 sentiment = 0, text_format = "simple", api = None):
     """
     Format a tweet's text based on certain parameters for output
     """
@@ -192,6 +205,8 @@ def format_text(tweet_object, strip_usertags = False, strip_hashtags = False,
     
     # 'simple' text format only returns the tweet text
     if text_format == "simple":
+        
+        # Clean the tweet's text
         cleaned_text = clean_text(tweet_object.tweet, strip_usertags,
                                   strip_hashtags)
         
@@ -204,6 +219,93 @@ def format_text(tweet_object, strip_usertags = False, strip_hashtags = False,
         # Return an empty string if cleaned_text is empty
         if cleaned_text == "":
             output_tweet_text = ""
+   
+   
+    # 'reply' text format includes text from the tweets that were replied-to
+    if text_format == "reply":
+        
+        # Clean the tweet's text
+        cleaned_text = clean_text(tweet_object.tweet, strip_usertags,
+                                  strip_hashtags)
+        
+        # Add the arguments delimieter
+        output_tweet_text = "****ARGUMENTS\n"
+        
+        # Specify whether the tweet is an original tweet or a reply
+        if is_reply(tweet_object):
+            output_tweet_text += "REPLY\n"
+        else:
+            output_tweet_text += "ORIGINAL\n"
+        
+        # If we should include sentiment information
+        if sentiment > 0:
+            output_tweet_text += sentiment_text(cleaned_text, sentiment) + "\n"
+        
+        # Write the parent tweet delimieter
+        output_tweet_text += "****PARENT\n"
+        
+        # Add the thread's parent tweet text if the tweet is a reply
+        if is_reply(tweet_object):
+            
+            # Sometimes Twitter references non-existant tweets, so handle error
+            try:
+                # Get the object of the thread's parent tweet
+                parent_tweet_object = api.get_status(tweet_object.conversation_id,
+                                                     tweet_mode="extended")
+                # Sleep for 2 seconds to avoid hitting rate limits
+                sleep(2)
+            except tweepy.error.TweepError:
+                # If tweet is non-existant, reference the original tweet
+                parent_tweet_object = api.get_status(tweet_object.id_str,
+                                                     tweet_mode="extended")
+                # Sleep for 2 seconds to avoid hitting rate limits
+                sleep(2)
+                
+            cleaned_text = clean_text(parent_tweet_object.full_text, 
+                                      strip_usertags, strip_hashtags)
+            
+            output_tweet_text += cleaned_text + "\n"
+        
+        # Write the parent tweet delimieter
+        output_tweet_text += "****IN_REPLY_TO\n"
+        
+        # Add parent tweet text if the tweet is a reply
+        if is_reply(tweet_object):
+            
+            api_tweet_object = api.get_status(tweet_object.id_str, 
+                                              tweet_mode="extended")
+            # Sleep for 2 seconds to avoid hitting rate limits
+            sleep(2)
+                    
+            
+            in_reply_to_status_id_str = api_tweet_object.in_reply_to_status_id_str
+            
+            # Sometimes Twitter references non-existant tweets, so handle error
+            try:
+                in_reply_tweet_object = api.get_status(in_reply_to_status_id_str, 
+                                                       tweet_mode="extended")
+                # Sleep for 2 seconds to avoid hitting rate limits
+                sleep(2)
+                
+            except tweepy.error.TweepError:
+                # If tweet is non-existant, reference the parent tweet
+                in_reply_tweet_object = parent_tweet_object
+                
+            cleaned_text = clean_text(in_reply_tweet_object.full_text, 
+                                      strip_usertags, strip_hashtags)
+            
+            output_tweet_text += cleaned_text + "\n"
+        
+        # Write the reply tweet delimieter
+        output_tweet_text += "****TWEET\n"
+        
+        # Clean the tweet's text
+        cleaned_text = clean_text(tweet_object.tweet, strip_usertags,
+                                  strip_hashtags)
+        
+        # Add the cleaned tweet text
+        output_tweet_text += cleaned_text
+        
             
     return(output_tweet_text)
 
@@ -256,7 +358,7 @@ def sentiment_text(tweet_text, sentiment = 0):
         else:
             output_tweet_text += "POSITIVE"
     
-    return output_tweet_text + ", " + str(blob.sentiment.polarity)
+    return output_tweet_text
 
 
 def clean_text(tweet_text, strip_usertags = False, strip_hashtags = False):
