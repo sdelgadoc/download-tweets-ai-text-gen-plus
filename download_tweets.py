@@ -20,6 +20,8 @@ def download_tweets(
     include_links=False,
     strip_usertags=False,
     strip_hashtags=False,
+    sentiment = 0,
+    text_format = "simple"
 ):
     """Download public Tweets from a given Twitter account
     into a format suitable for training with AI text generation tools.
@@ -62,14 +64,19 @@ def download_tweets(
         
         
         for username in usernames:
-            tweets = download_account_tweets(username, limit, include_replies, strip_usertags, strip_hashtags, include_links)
+            tweets = download_account_tweets(username, limit, include_replies, strip_usertags, strip_hashtags, include_links, sentiment, text_format)
             
             [w.writerow([tweet]) for tweet in tweets]
     
 
-def download_account_tweets(username=None, limit=None, include_replies=False,
-                    strip_usertags=False, strip_hashtags=False, 
-                    include_links=False):
+def download_account_tweets(username=None,
+                            limit=None,
+                            include_replies=False,
+                            include_links=False,
+                            strip_usertags=False,
+                            strip_hashtags=False,
+                            sentiment = 0,
+                            text_format = "simple"):
     """Download public Tweets from a given Twitter account and return as a list
     :param username: Twitter @ username to gather tweets.
     :param limit: # of tweets to gather; None for all tweets.
@@ -79,6 +86,8 @@ def download_account_tweets(username=None, limit=None, include_replies=False,
     :param include_links: Whether to include tweets with links.
     :return tweets: List of tweets from the Twitter account
     """
+
+    print("Retrieving tweets for @{}...".format(username))
 
     # Validate that it is a multiple of 40; set total number of tweets
     if limit:
@@ -90,32 +99,23 @@ def download_account_tweets(username=None, limit=None, include_replies=False,
     else:
         pbar = tqdm()
 
-    pattern = r"http\S+|pic\.\S+|\xa0|…"
-
-    if strip_usertags:
-        pattern += r"|@[a-zA-Z0-9_]+"
-
-    if strip_hashtags:
-        pattern += r"|#[a-zA-Z0-9_]+"
-
-    # Create an empty list of tweets to output
+    # Create an empty list of tweet texts to return
     tweets_output = []
     
     # Create an empty file to store pagination id
     with open(".temp", "w", encoding="utf-8") as f:
         f.write(str(-1))
 
-    print("Retrieving tweets for @{}...".format(username))
-
     # Set the loop's iterator
     i = 0
-    # Iterate forever, and break based on two conditions below
+    # Iterate forever, and break based on reaching limit or no more tweets
     while(True):
         
         # If a limit is specified, break once it's reached
         if limit:
             if i >= (limit // 40): break
         
+        # Create an empty list to store retrieved tweet objects
         tweet_data = []
 
         # twint may fail; give it up to 5 tries to return tweets
@@ -138,30 +138,38 @@ def download_account_tweets(username=None, limit=None, include_replies=False,
             else:
                 continue
 
-        # If still no tweets after multiple tries, we're done
+        # If still no tweets after 5 tries, stop downloading tweets
         if len(tweet_data) == 0:
             break
 
         if not include_replies:
-                      for tweet in tweet_data
-                      if not is_reply(tweet)]
-
-            # On older tweets, if the cleaned tweet starts with an "@",
-            # it is a de-facto reply.
-            for tweet in tweets:
-                if tweet != '' and not tweet.startswith('@'):
-                    tweets_output.append(tweet)
+            
+            for tweet in tweet_data:
+                if not is_reply(tweet):
+                    tweet_text = format_text(tweet, strip_usertags,
+                                             strip_hashtags,sentiment,
+                                             text_format)
+            
+                    # Do not append the tweet if the tweet_text is empty
+                    if tweet_text != "":
+                        tweets_output.append(tweet_text)
+                      
         else:
-                      for tweet in tweet_data]
-
-            for tweet in tweets:
-                if tweet != '':
-                    tweets_output.append(tweet)
+            for tweet in tweet_data:
+                tweet_text = format_text(tweet, strip_usertags,
+                                         strip_hashtags,sentiment,
+                                         text_format)
+        
+                # Do not append the tweet if the tweet_text is empty
+                if tweet_text != "":
+                    tweets_output.append(tweet_text)
+    
 
         pbar.update(40)
 
-            tweet_data[-1].datetime / 1000.0
-        ).strftime("%Y-%m-%d %H:%M:%S")
+        oldest_tweet = datetime.utcfromtimestamp(tweet_data[-1].datetime / 
+                                                 1000.0).strftime(
+                                                 "%Y-%m-%d %H:%M:%S")
         pbar.set_description("Oldest Tweet: " + oldest_tweet)
         
         # Increase the loop's iterator
@@ -174,25 +182,29 @@ def download_account_tweets(username=None, limit=None, include_replies=False,
     return tweets_output
 
 
+def format_text(tweet_object, strip_usertags = False, strip_hashtags = False,
                  sentiment = 0, text_format = "simple"):
     """
     Format a tweet's text based on certain parameters for output
     """
     
+    output_tweet_text = ""
     
-    cleaned_text = clean_text(tweet_object.tweet,strip_usertags, 
-                            strip_hashtags)
-    
-    # 'simple' text format only returns the tweet
+    # 'simple' text format only returns the tweet text
     if text_format == "simple":
-        cleaned_text = clean_text(tweet_text,strip_usertags, strip_hashtags)
+        cleaned_text = clean_text(tweet_object.tweet, strip_usertags,
+                                  strip_hashtags)
         
         # If we should include sentiment information
         if sentiment > 0:
             output_tweet_text += sentiment_text(cleaned_text, sentiment) + "\n"
         
         output_tweet_text += cleaned_text
-        
+    
+        # Return an empty string if cleaned_text is empty
+        if cleaned_text == "":
+            output_tweet_text = ""
+            
     return(output_tweet_text)
 
 
@@ -288,6 +300,10 @@ def is_reply(tweet):
     if sum(conversations) < len(users):
         return True
     
+    # On older tweets, tweets starting with an "@" are de-facto replies
+    if tweet.tweet.startswith('@'):
+        return True
+        
     return False
 
 
