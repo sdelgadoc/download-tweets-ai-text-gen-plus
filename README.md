@@ -82,7 +82,7 @@ After inputting the credentials, you can collect tweets by running:
 python3 download_tweets.py <twitter_username> None True False False False 7 reply
 ```
 
-***Note:*** The collection of tweets with the 'reply' format will likely be up to 90% slower than the 'simple' format, due to the Twitter API's rate limitting. 
+***Note:*** The collection of tweets with the 'reply' format will likely be up to 90% slower than the 'simple' format, due to the Twitter API's rate limitting.  But, because each tweet has more information, you might need fewer tweets to train your model
 
 ## How to Train an AI on the downloaded tweets
 
