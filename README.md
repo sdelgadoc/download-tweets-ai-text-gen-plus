@@ -1,4 +1,4 @@
-# download-tweets-ai-text-gen
+# download-tweets-ai-text-gen-plus
 
 A small Python 3 script to download public Tweets from a given Twitter account into a format suitable for AI text generation tools (such as [gpt-2-simple](https://github.com/minimaxir/gpt-2-simple) for finetuning [GPT-2](https://openai.com/blog/better-language-models/)).
 
@@ -8,14 +8,12 @@ A small Python 3 script to download public Tweets from a given Twitter account i
 
 You can view examples of AI-generated tweets from datasets retrieved with this tool in the `/examples` folder.
 
-Inspired by popular demand due to the success of [@dril_gpt2](https://twitter.com/dril_gpt2).
-
 ## Usage
 
 First, install the Python script dependencies:
 
 ```sh
-pip3 install twint==2.1.4 fire tqdm
+pip3 install twint==2.1.4 fire tqdm textblob tweepy
 ```
 
 Then download the `download_tweets.py` script from this repo.
@@ -47,6 +45,8 @@ The parameters you can pass to the command line interface (positionally or expli
 * include_replies: Include replies from the user in the dataset [default: False]
 * strip_usertags: Strips out `@` user tags in the tweet text [default: False]
 * strip_hashtags: Strips out `#` hashtags in the tweet text [default: False]
+* sentiments: Adds the specified number of sentiment categories to the output so you can then generate positive/negative tweets changing a parameter [default: 0, possible values: 0, 3, 5, 7]
+* text_format: Specifies the format that tweets should be returned.  The 'simple' format just returns the tweet text, and the 'reply' format returns information on on preceding tweets to a reply to train a model to generate and reply to tweets [default: 'simple', possible values: 'simple', 'reply']
 
 ## How to Train an AI on the downloaded tweets
 
@@ -68,7 +68,6 @@ gpt2.generate(sess,
 
 ## Helpful Notes
 
-* Retweets are not included in the downloaded dataset. (which is generally a good thing)
 * You'll need *thousands* of tweets at minimum to feed to the input model for a good generation results. (ideally 1 MB of input text data, although with tweets that hard to achieve)
 * To help you reach the 1 MB of input text data, you can load data from multiple similar Twitter usernames
 * The download will likely end much earlier than the theoretical limit (inferred from the user profile) as the limit includes retweets/replies/whatever cache shennanigans Twitter is employing.
@@ -77,6 +76,7 @@ gpt2.generate(sess,
 ## Maintainer
 
 Santiago Delgado  ([@santiagodc](https://twitter.com/santiagodc))
+based on [download-tweets-ai-text-gen](https://github.com/minimaxir/download-tweets-ai-text-gen) by [@minimaxir](https://github.com/minimaxir)
 
 ## License
 

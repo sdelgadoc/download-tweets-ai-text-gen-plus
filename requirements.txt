@@ -1,3 +1,5 @@
 twint==2.1.4
 fire
 tqdm
+textblob
+tweepy
