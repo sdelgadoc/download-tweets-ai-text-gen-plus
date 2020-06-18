@@ -24,10 +24,10 @@ The script is interacted via a command line interface. After `cd`ing into the di
 python3 download_tweets.py <twitter_username>
 ```
 
-e.g. If you want to download all tweets (sans retweets/replies/quote tweets) from Twitter user [@dril](https://twitter.com/dril_gpt2), run:
+e.g. If you want to download all tweets (sans retweets/replies/quote tweets) from Twitter user [@santiagodc](https://twitter.com/santiagodc), run:
 
 ```sh
-python3 download_tweets.py dril
+python3 download_tweets.py santiagodc
 ```
 
 The script can can also download tweets from multiple usernames at one time.  To do so, first create a text file (.txt) with the list of usernames.  Then, run script referencing the file name:
@@ -47,6 +47,42 @@ The parameters you can pass to the command line interface (positionally or expli
 * strip_hashtags: Strips out `#` hashtags in the tweet text [default: False]
 * sentiments: Adds the specified number of sentiment categories to the output so you can then generate positive/negative tweets changing a parameter [default: 0, possible values: 0, 3, 5, 7]
 * text_format: Specifies the format in which tweets will be returned.  The 'simple' format only returns the tweet text. The 'reply' format returns information on preceding tweets to train an AI that can reply to tweets [default: 'simple', possible values: 'simple', 'reply']
+
+## How to collect tweets to train an AI that can reply to tweets
+
+The code supports collecting tweets in a format that lets you train an AI that can reply to other tweets.  The output format is based on [the format](https://www.reddit.com/r/SubSimulatorGPT2Meta/comments/caelo0/could_you_give_more_details_on_the_input/et8j3b1/?context=3) used to train the [Subreddit Simulator](https://www.reddit.com/r/SubredditSimulator/) Reddit community.
+
+The output format is the following:
+```txt
+****ARGUMENTS
+ORIGINAL or REPLY: Whether the tweet is an original tweet or a reply
+SENTIMENT: If the sentiment parameter is used, text describing the tweet text's sentiment
+****PARENT
+[Tweet text for the topmost tweet in a reply thread]
+****IN_REPLY_TO
+[Tweet text for the tweet that is being responded to]
+****TWEET
+[Tweet text for the tweet that was collected]
+```
+
+To collect tweets in the reply format, you will need to [create a Twitter app](https://developer.twitter.com/en/apps) so you can obtain access to the Twitter API.  The Twitter API is used by the code to traverse reply threads, which is currently not possible in the Twint library.
+
+Once you create your Twitter app, input your credentials into the ``keys.py`` file shown below:
+
+```py
+keys = {'consumer_key': "",
+        'consumer_secret': "",
+        'access_token': "",
+        'access_token_secret': ""}
+```
+
+After inputting the credentials, you can collect tweets by running:
+
+```sh
+python3 download_tweets.py <twitter_username> None True False False False 7 reply
+```
+
+***Note:*** The collection of tweets with the 'reply' format will likely be up to 90% slower than the 'simple' format, due to the Twitter API's rate limitting. 
 
 ## How to Train an AI on the downloaded tweets
 
