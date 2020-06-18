@@ -46,7 +46,7 @@ The parameters you can pass to the command line interface (positionally or expli
 * strip_usertags: Strips out `@` user tags in the tweet text [default: False]
 * strip_hashtags: Strips out `#` hashtags in the tweet text [default: False]
 * sentiments: Adds the specified number of sentiment categories to the output so you can then generate positive/negative tweets changing a parameter [default: 0, possible values: 0, 3, 5, 7]
-* text_format: Specifies the format that tweets should be returned.  The 'simple' format just returns the tweet text, and the 'reply' format returns information on on preceding tweets to a reply to train a model to generate and reply to tweets [default: 'simple', possible values: 'simple', 'reply']
+* text_format: Specifies the format in which tweets will be returned.  The 'simple' format only returns the tweet text. The 'reply' format returns information on preceding tweets to train an AI that can reply to tweets [default: 'simple', possible values: 'simple', 'reply']
 
 ## How to Train an AI on the downloaded tweets
 
