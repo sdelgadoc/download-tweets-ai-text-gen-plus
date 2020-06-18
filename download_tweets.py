@@ -76,11 +76,9 @@ def download_tweets(
             tweets = download_account_tweets(username, limit, include_replies, 
                                              strip_usertags, strip_hashtags, 
                                              include_links, sentiment, 
-                                             text_format, api)
+                                             text_format, api, w)
             
-            [w.writerow([tweet]) for tweet in tweets]
     
-
 def download_account_tweets(username=None,
                             limit=None,
                             include_replies=False,
@@ -89,7 +87,8 @@ def download_account_tweets(username=None,
                             strip_hashtags=False,
                             sentiment = 0,
                             text_format = "simple",
-                            api = None):
+                            api = None,
+                            w = None):
     """Download public Tweets from a given Twitter account and return as a list
     :param username: Twitter @ username to gather tweets.
     :param limit: # of tweets to gather; None for all tweets.
@@ -147,7 +146,7 @@ def download_account_tweets(username=None,
 
                 # If it fails, sleep before retry.
                 if len(tweet_data) == 0:
-                    sleep(2)
+                    sleep(1)
             else:
                 continue
 
@@ -155,7 +154,20 @@ def download_account_tweets(username=None,
         if len(tweet_data) == 0:
             break
 
-        if not include_replies:
+        # Do not filter out replies
+        if include_replies:
+            
+            for tweet in tweet_data:
+                tweet_text = format_text(tweet, strip_usertags,
+                                         strip_hashtags,sentiment,
+                                         text_format, api)
+        
+                # Do not write tweet to file if the tweet_text is empty
+                if tweet_text != "":
+                    # Write tweet text to file
+                    w.writerow([tweet_text])
+        # Filter out replies
+        else:
             
             for tweet in tweet_data:
                 if not is_reply(tweet):
@@ -163,21 +175,12 @@ def download_account_tweets(username=None,
                                              strip_hashtags,sentiment,
                                              text_format, api)
             
-                    # Do not append the tweet if the tweet_text is empty
+                    # Do not write tweet to file if the tweet_text is empty
                     if tweet_text != "":
-                        tweets_output.append(tweet_text)
-                      
-        else:
-            for tweet in tweet_data:
-                tweet_text = format_text(tweet, strip_usertags,
-                                         strip_hashtags,sentiment,
-                                         text_format, api)
-        
-                # Do not append the tweet if the tweet_text is empty
-                if tweet_text != "":
-                    tweets_output.append(tweet_text)
+                        # Write tweet text to file
+                        w.writerow([tweet_text])
+            
     
-
         pbar.update(40)
 
         oldest_tweet = datetime.utcfromtimestamp(tweet_data[-1].datetime / 
@@ -191,8 +194,8 @@ def download_account_tweets(username=None,
     pbar.close()
     os.remove(".temp")
     
-    # Return list of tweets
-    return tweets_output
+    # Return 0
+    return 0
 
 
 def format_text(tweet_object, strip_usertags = False, strip_hashtags = False,
@@ -252,49 +255,54 @@ def format_text(tweet_object, strip_usertags = False, strip_hashtags = False,
                 # Get the object of the thread's parent tweet
                 parent_tweet_object = api.get_status(tweet_object.conversation_id,
                                                      tweet_mode="extended")
-                # Sleep for 2 seconds to avoid hitting rate limits
-                sleep(2)
-            except tweepy.error.TweepError:
-                # If tweet is non-existant, reference the original tweet
-                parent_tweet_object = api.get_status(tweet_object.id_str,
-                                                     tweet_mode="extended")
-                # Sleep for 2 seconds to avoid hitting rate limits
-                sleep(2)
+                # Sleep for 1.5 seconds to avoid hitting rate limits
+                sleep(1.5)
                 
-            cleaned_text = clean_text(parent_tweet_object.full_text, 
+                cleaned_text = clean_text(parent_tweet_object.full_text, 
                                       strip_usertags, strip_hashtags)
+            
+            # If tweet is non-existant, use original cleaned tweet text
+            except tweepy.error.TweepError:
+                pass
             
             output_tweet_text += cleaned_text + "\n"
         
         # Write the parent tweet delimieter
         output_tweet_text += "****IN_REPLY_TO\n"
         
-        # Add parent tweet text if the tweet is a reply
+        # Add in reply to tweet text if the tweet is a reply
         if is_reply(tweet_object):
             
             api_tweet_object = api.get_status(tweet_object.id_str, 
                                               tweet_mode="extended")
-            # Sleep for 2 seconds to avoid hitting rate limits
-            sleep(2)
+            # Sleep for 1.5 seconds to avoid hitting rate limits
+            sleep(1.5)
                     
             
             in_reply_to_status_id_str = api_tweet_object.in_reply_to_status_id_str
             
-            # Sometimes Twitter references non-existant tweets, so handle error
-            try:
-                in_reply_tweet_object = api.get_status(in_reply_to_status_id_str, 
-                                                       tweet_mode="extended")
-                # Sleep for 2 seconds to avoid hitting rate limits
-                sleep(2)
+            # Only get in-reply tweet object if different from the parent tweet
+            if in_reply_to_status_id_str == tweet_object.conversation_id:
                 
-            except tweepy.error.TweepError:
-                # If tweet is non-existant, reference the parent tweet
-                in_reply_tweet_object = parent_tweet_object
+                output_tweet_text += cleaned_text + "\n"
                 
-            cleaned_text = clean_text(in_reply_tweet_object.full_text, 
-                                      strip_usertags, strip_hashtags)
-            
-            output_tweet_text += cleaned_text + "\n"
+            else:
+                
+                # Sometimes Twitter references non-existant tweets, so handle error
+                try:
+                    in_reply_tweet_object = api.get_status(in_reply_to_status_id_str, 
+                                                           tweet_mode="extended")
+                    # Sleep for 2 seconds to avoid hitting rate limits
+                    sleep(2)
+                    
+                except tweepy.error.TweepError:
+                    # If tweet is non-existant, reference the parent tweet
+                    in_reply_tweet_object = parent_tweet_object
+                    
+                cleaned_text = clean_text(in_reply_tweet_object.full_text, 
+                                          strip_usertags, strip_hashtags)
+                
+                output_tweet_text += cleaned_text + "\n"
         
         # Write the reply tweet delimieter
         output_tweet_text += "****TWEET\n"
