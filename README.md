@@ -65,7 +65,7 @@ SENTIMENT: If the sentiment parameter is used, text describing the tweet text's 
 [Tweet text for the tweet that was collected]
 ```
 
-To collect tweets in the reply format, you will need to [create a Twitter app](https://developer.twitter.com/en/apps) so you can obtain access to the Twitter API.  The Twitter API is used by the code to traverse reply threads, which is currently not possible in the Twint library.
+To collect tweets in the reply format, you will need to [create a Twitter app](https://developer.twitter.com/en/docs/basics/apps/overview) so you can obtain access to the Twitter API.  The Twitter API is used by the code to traverse reply threads, which is currently not possible in the Twint library.
 
 Once you create your Twitter app, input your credentials into the ``keys.py`` file shown below:
 
