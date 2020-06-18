@@ -259,7 +259,7 @@ def format_text(tweet_object, strip_usertags = False, strip_hashtags = False,
                 sleep(1.5)
                 
                 cleaned_text = clean_text(parent_tweet_object.full_text, 
-                                      strip_usertags, strip_hashtags)
+                                          strip_usertags, strip_hashtags)
             
             # If tweet is non-existant, use original cleaned tweet text
             except tweepy.error.TweepError:
@@ -292,17 +292,17 @@ def format_text(tweet_object, strip_usertags = False, strip_hashtags = False,
                 try:
                     in_reply_tweet_object = api.get_status(in_reply_to_status_id_str, 
                                                            tweet_mode="extended")
-                    # Sleep for 2 seconds to avoid hitting rate limits
-                    sleep(2)
+                    # Sleep for 1.5 seconds to avoid hitting rate limits
+                    sleep(1.5)
                     
-                except tweepy.error.TweepError:
-                    # If tweet is non-existant, reference the parent tweet
-                    in_reply_tweet_object = parent_tweet_object
-                    
-                cleaned_text = clean_text(in_reply_tweet_object.full_text, 
+                    cleaned_text = clean_text(in_reply_tweet_object.full_text, 
                                           strip_usertags, strip_hashtags)
-                
-                output_tweet_text += cleaned_text + "\n"
+                    
+                # If tweet is non-existant, use original cleaned tweet text
+                except tweepy.error.TweepError:
+                    pass
+                    
+            output_tweet_text += cleaned_text + "\n"
         
         # Write the reply tweet delimieter
         output_tweet_text += "****TWEET\n"
