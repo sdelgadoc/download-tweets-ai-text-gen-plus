@@ -255,8 +255,8 @@ def format_text(tweet_object, strip_usertags = False, strip_hashtags = False,
                 # Get the object of the thread's parent tweet
                 parent_tweet_object = api.get_status(tweet_object.conversation_id,
                                                      tweet_mode="extended")
-                # Sleep for 1.5 seconds to avoid hitting rate limits
-                sleep(1.5)
+                # Sleep for 1.0 seconds to avoid hitting rate limits
+                sleep(1.0)
                 
                 cleaned_text = clean_text(parent_tweet_object.full_text, 
                                           strip_usertags, strip_hashtags)
@@ -275,25 +275,21 @@ def format_text(tweet_object, strip_usertags = False, strip_hashtags = False,
             
             api_tweet_object = api.get_status(tweet_object.id_str, 
                                               tweet_mode="extended")
-            # Sleep for 1.5 seconds to avoid hitting rate limits
-            sleep(1.5)
+            # Sleep for 1.0 seconds to avoid hitting rate limits
+            sleep(1.0)
                     
             
             in_reply_to_status_id_str = api_tweet_object.in_reply_to_status_id_str
             
             # Only get in-reply tweet object if different from the parent tweet
-            if in_reply_to_status_id_str == tweet_object.conversation_id:
-                
-                output_tweet_text += cleaned_text + "\n"
-                
-            else:
-                
+            if in_reply_to_status_id_str != tweet_object.conversation_id:
+
                 # Sometimes Twitter references non-existant tweets, so handle error
                 try:
                     in_reply_tweet_object = api.get_status(in_reply_to_status_id_str, 
                                                            tweet_mode="extended")
-                    # Sleep for 1.5 seconds to avoid hitting rate limits
-                    sleep(1.5)
+                    # Sleep for 1.0 seconds to avoid hitting rate limits
+                    sleep(1.0)
                     
                     cleaned_text = clean_text(in_reply_tweet_object.full_text, 
                                           strip_usertags, strip_hashtags)
