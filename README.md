@@ -98,7 +98,7 @@ After inputting the credentials, you can collect tweets with three sentiment cat
 python3 download_tweets.py <twitter_username> None True False False False 3 reply
 ```
 
-***Note:*** The collection rate of tweets with the 'reply' format will likely be 1 - 2 tweets per second, much sloder than the 'simple' format due to the Twitter API's rate limitting.  But, because each tweet has more information, you might need fewer tweets to train your model
+***Note:*** The collection rate of tweets with the 'reply' format will likely be 1 - 2 tweets per second, much slower than the 'simple' format due to the Twitter API's rate limitting.  But, because each tweet has more information, you might need fewer tweets to train your model
 
 ## How to Train an AI on the downloaded tweets
 
