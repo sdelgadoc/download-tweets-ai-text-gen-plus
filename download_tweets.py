@@ -146,7 +146,7 @@ def download_account_tweets(username=None,
 
                 # If it fails, sleep before retry.
                 if len(tweet_data) == 0:
-                    sleep(1)
+                    sleep(1.0)
             else:
                 continue
 
@@ -227,6 +227,9 @@ def format_text(tweet_object, strip_usertags = False, strip_hashtags = False,
     # 'reply' text format includes text from the tweets that were replied-to
     if text_format == "reply":
         
+        # How many second to wait after calling Twitter API
+        api_delay = 1.5
+        
         # Clean the tweet's text
         cleaned_text = clean_text(tweet_object.tweet, strip_usertags,
                                   strip_hashtags)
@@ -255,8 +258,8 @@ def format_text(tweet_object, strip_usertags = False, strip_hashtags = False,
                 # Get the object of the thread's parent tweet
                 parent_tweet_object = api.get_status(tweet_object.conversation_id,
                                                      tweet_mode="extended")
-                # Sleep for 1.0 seconds to avoid hitting rate limits
-                sleep(1.0)
+                # Delay to avoid hitting rate limits
+                sleep(api_delay)
                 
                 cleaned_text = clean_text(parent_tweet_object.full_text, 
                                           strip_usertags, strip_hashtags)
@@ -275,8 +278,8 @@ def format_text(tweet_object, strip_usertags = False, strip_hashtags = False,
             
             api_tweet_object = api.get_status(tweet_object.id_str, 
                                               tweet_mode="extended")
-            # Sleep for 1.0 seconds to avoid hitting rate limits
-            sleep(1.0)
+            # Delay to avoid hitting rate limits
+            sleep(api_delay)
                     
             
             in_reply_to_status_id_str = api_tweet_object.in_reply_to_status_id_str
@@ -288,8 +291,8 @@ def format_text(tweet_object, strip_usertags = False, strip_hashtags = False,
                 try:
                     in_reply_tweet_object = api.get_status(in_reply_to_status_id_str, 
                                                            tweet_mode="extended")
-                    # Sleep for 1.0 seconds to avoid hitting rate limits
-                    sleep(1.0)
+                    # Delay to avoid hitting rate limits
+                    sleep(api_delay)
                     
                     cleaned_text = clean_text(in_reply_tweet_object.full_text, 
                                           strip_usertags, strip_hashtags)
