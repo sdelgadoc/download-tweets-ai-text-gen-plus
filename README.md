@@ -45,8 +45,24 @@ The parameters you can pass to the command line interface (positionally or expli
 * include_replies: Include replies from the user in the dataset [default: False]
 * strip_usertags: Strips out `@` user tags in the tweet text [default: False]
 * strip_hashtags: Strips out `#` hashtags in the tweet text [default: False]
-* sentiments: Adds the specified number of sentiment categories to the output so you can then generate positive/negative tweets changing a parameter [default: 0, possible values: 0, 3, 5, 7]
+* sentiment: Adds the specified number of sentiment categories to the output so you can then generate positive/negative tweets changing a parameter [default: 0, possible values: 0, 3, 5, 7]
 * text_format: Specifies the format in which tweets will be returned.  The 'simple' format only returns the tweet text. The 'reply' format returns information on preceding tweets to train an AI that can reply to tweets [default: 'simple', possible values: 'simple', 'reply']
+
+## How does the sentiment functionality work
+
+The sentiment parameter adds a sentiment category to the tweet text.  This information allows the user to train and generate text with different sentiments by changing a parameter.
+
+The output format using the 'simple' text format is the following:
+```txt
+[Sentiment category]
+[Tweet text for the tweet that was collected]
+```
+The sentiment parameter accepts an integer that specifies the number of sentiment categories that are returned.  The sentiment categories for the different possible parameters are the following:
+* 0: No sentiment category is returned
+* 3: POSITIVE, NEUTRAL, NEGATIVE
+* 5: VERY POSITIVE, POSITIVE, NEUTRAL, NEGATIVE, VERY NEGATIVE
+* 7: EXTREMELY POSITIVE, VERY POSITIVE, POSITIVE, NEUTRAL, NEGATIVE, VERY NEGATIVE, EXTREMELY NEGATIVE
+
 
 ## How to collect tweets to train an AI that can reply to tweets
 
@@ -76,13 +92,13 @@ keys = {'consumer_key': "",
         'access_token_secret': ""}
 ```
 
-After inputting the credentials, you can collect tweets by running:
+After inputting the credentials, you can collect tweets with three sentiment categories by running:
 
 ```sh
-python3 download_tweets.py <twitter_username> None True False False False 7 reply
+python3 download_tweets.py <twitter_username> None True False False False 3 reply
 ```
 
-***Note:*** The collection of tweets with the 'reply' format will likely be up to 90% slower than the 'simple' format, due to the Twitter API's rate limitting.  But, because each tweet has more information, you might need fewer tweets to train your model
+***Note:*** The collection rate of tweets with the 'reply' format will likely be 1 - 2 tweets per second, much slower than the 'simple' format due to the Twitter API's rate limitting.  But, because each tweet has more information, you might need fewer tweets to train your model
 
 ## How to Train an AI on the downloaded tweets
 
