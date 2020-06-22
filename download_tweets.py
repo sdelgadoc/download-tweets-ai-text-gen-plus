@@ -15,24 +15,26 @@ import tweepy
 logger = logging.getLogger()
 logger.disabled = True
 
-def download_tweets(
-    username=None,
-    limit=None,
-    include_replies=False,
-    include_links=False,
-    strip_usertags=False,
-    strip_hashtags=False,
-    sentiment = 0,
-    text_format = "simple"
-):
-    """Download public Tweets from a given Twitter account
+def download_tweets(username=None,
+                    limit=None,
+                    include_replies=False,
+                    include_links=False,
+                    strip_usertags=False,
+                    strip_hashtags=False,
+                    sentiment = 0,
+                    text_format = "simple"):
+    """
+    Download public Tweets from one or multiple Twitter accounts
     into a format suitable for training with AI text generation tools.
-    :param username: Twitter @ username to gather tweets or .txt file name with multiple usernames
+    :param username: Twitter @ username to gather tweets or .txt file name 
+        with multiple usernames
     :param limit: # of tweets to gather; None for all tweets.
     :param include_replies: Whether to include replies to other tweets.
+    :param include_links: Whether to include tweets with links.
     :param strip_usertags: Whether to remove user tags from the tweets.
     :param strip_hashtags: Whether to remove hashtags from the tweets.
-    :param include_links: Whether to include tweets with links.
+    :param sentiment: Number of sentiment categories to include in text.
+    :param text_format: Type of output format for the tweet.
     """
 
     # Validate that a username or .txt file name is specified
@@ -89,14 +91,20 @@ def download_account_tweets(username=None,
                             text_format = "simple",
                             api = None,
                             w = None):
-    """Download public Tweets from a given Twitter account and return as a list
-    :param username: Twitter @ username to gather tweets.
+    """
+    Download public Tweets from one Twitter account into a format suitable 
+    for training with AI text generation tools.
+    :param username: Twitter @ username to gather tweets or .txt file name
+        with multiple usernames
     :param limit: # of tweets to gather; None for all tweets.
     :param include_replies: Whether to include replies to other tweets.
+    :param include_links: Whether to include tweets with links.
     :param strip_usertags: Whether to remove user tags from the tweets.
     :param strip_hashtags: Whether to remove hashtags from the tweets.
-    :param include_links: Whether to include tweets with links.
-    :return tweets: List of tweets from the Twitter account
+    :param sentiment: Number of sentiment categories to include in text.
+    :param text_format: Type of output format for the tweet.
+    :param api: Open Twitter API reference
+    :param w: Open file reference to write output
     """
 
     print("Retrieving tweets for @{}...".format(username))
@@ -198,10 +206,20 @@ def download_account_tweets(username=None,
     return 0
 
 
-def format_text(tweet_object, strip_usertags = False, strip_hashtags = False,
-                 sentiment = 0, text_format = "simple", api = None):
+def format_text(tweet_object, 
+                strip_usertags = False,
+                strip_hashtags = False,
+                sentiment = 0,
+                text_format = "simple",
+                api = None):
     """
-    Format a tweet's text based on certain parameters for output
+    Format a tweet's text for output based on certain parameters
+    :param tweet_object: Twint tweet object whose object will be formated
+    :param strip_usertags: Whether to remove user tags from the tweets.
+    :param strip_hashtags: Whether to remove hashtags from the tweets.
+    :param sentiment: Number of sentiment categories to include in text.
+    :param text_format: Type of output format for the tweet.
+    :param api: Open Twitter API reference
     """
     
     output_tweet_text = ""
@@ -319,7 +337,9 @@ def format_text(tweet_object, strip_usertags = False, strip_hashtags = False,
 
 def sentiment_text(tweet_text, sentiment = 0):
     """
-    Return's a string describing the tweet text's sentiment
+    Returns a string describing the tweet text's sentiment
+    :param tweet_text: Text for which sentiment should be measured
+    :param sentiment: Number of sentiment categories to include in text.
     """
     
     output_tweet_text = ""
@@ -370,7 +390,10 @@ def sentiment_text(tweet_text, sentiment = 0):
 
 def clean_text(tweet_text, strip_usertags = False, strip_hashtags = False):
     """
-    Remove parts of a tweet's text based on certain parameters
+    Remove sections of the tweet text (clean) based on parameters
+    :param tweet_text: Text for which sentiment should be measured
+    :param strip_usertags: Whether to remove user tags from the tweets.
+    :param strip_hashtags: Whether to remove hashtags from the tweets.
     """
     
     # Strip all the leading usertags
@@ -394,7 +417,7 @@ def clean_text(tweet_text, strip_usertags = False, strip_hashtags = False):
 def is_reply(tweet):
     """
     Determines if the tweet is a reply to another tweet.
-    Requires somewhat hacky heuristics since not included w/ twint
+    :param tweet: Twint tweet object whose object will be formated
     """
 
     # If not a reply to another user, there will only be 1 entry in reply_to
