@@ -75,10 +75,10 @@ def download_tweets(username=None,
         
         
         for username in usernames:
-            tweets = download_account_tweets(username, limit, include_replies, 
-                                             strip_usertags, strip_hashtags, 
-                                             include_links, sentiment, 
-                                             text_format, api, w)
+            download_account_tweets(username, limit, include_replies, 
+                                    strip_usertags, strip_hashtags, 
+                                    include_links, sentiment, text_format, 
+                                    api, w)
             
     
 def download_account_tweets(username=None,
@@ -118,9 +118,6 @@ def download_account_tweets(username=None,
     # If no limit specifed, don't specify total number of tweet
     else:
         pbar = tqdm()
-
-    # Create an empty list of tweet texts to return
-    tweets_output = []
     
     # Create an empty file to store pagination id
     with open(".temp", "w", encoding="utf-8") as f:
@@ -269,6 +266,8 @@ def format_text(tweet_object,
         output_tweet_text += "****PARENT\n"
         
         # Add the thread's parent tweet text if the tweet is a reply
+        parent_tweet_found = True
+        
         if is_reply(tweet_object):
             
             # Sometimes Twitter references non-existant tweets, so handle error
@@ -284,7 +283,7 @@ def format_text(tweet_object,
             
             # If tweet is non-existant, use original cleaned tweet text
             except tweepy.error.TweepError:
-                pass
+                parent_tweet_found = False
             
             output_tweet_text += cleaned_text + "\n"
         
