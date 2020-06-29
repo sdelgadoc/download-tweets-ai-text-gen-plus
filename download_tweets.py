@@ -291,7 +291,7 @@ def format_text(tweet_object,
         # Write the parent tweet delimieter
         output_tweet_text += "****IN_REPLY_TO\n"
         
-        # Add in reply to tweet text if the tweet is a reply
+        # Add in-reply to tweet text if the tweet is a reply
         if is_reply(tweet_object):
             
             api_tweet_object = api.get_status(tweet_object.id_str, 
@@ -320,6 +320,21 @@ def format_text(tweet_object,
                     pass
                     
             output_tweet_text += cleaned_text + "\n"
+       
+        # Convert to ORIGINAL if tweet is REPLY but can't retrieve parent tweet
+        if is_reply(tweet_object) and not parent_tweet_found:
+            
+            # Add the arguments delimieter
+            output_tweet_text = "****ARGUMENTS\n"
+            output_tweet_text += "ORIGINAL\n"
+            
+            # If we should include sentiment information
+            if sentiment > 0:
+                output_tweet_text += sentiment_text(cleaned_text, sentiment)+"\n"
+        
+            # Add empty PARENT and IN_REPLY_TO sections
+            output_tweet_text += "****PARENT\n"
+            output_tweet_text += "****IN_REPLY_TO\n"
         
         # Write the reply tweet delimieter
         output_tweet_text += "****TWEET\n"
