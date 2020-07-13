@@ -8,14 +8,12 @@ A small Python 3 script to download public Tweets from a given Twitter account i
 
 You can view examples of AI-generated tweets from datasets retrieved with this tool in the `/examples` folder.
 
-Inspired by popular demand due to the success of [@dril_gpt2](https://twitter.com/dril_gpt2).
-
 ## Usage
 
 First, install the Python script dependencies:
 
 ```sh
-pip3 install twint==2.1.4 fire tqdm
+pip3 install twint==2.1.4 fire tqdm textblob tweepy
 ```
 
 Then download the `download_tweets.py` script from this repo.
@@ -26,10 +24,10 @@ The script is interacted via a command line interface. After `cd`ing into the di
 python3 download_tweets.py <twitter_username>
 ```
 
-e.g. If you want to download all tweets (sans retweets/replies/quote tweets) from Twitter user [@dril](https://twitter.com/dril_gpt2), run:
+e.g. If you want to download all tweets (sans retweets/replies/quote tweets) from Twitter user [@santiagodc](https://twitter.com/santiagodc), run:
 
 ```sh
-python3 download_tweets.py dril
+python3 download_tweets.py santiagodc
 ```
 
 The script can can also download tweets from multiple usernames at one time.  To do so, first create a text file (.txt) with the list of usernames.  Then, run script referencing the file name:
@@ -47,6 +45,60 @@ The parameters you can pass to the command line interface (positionally or expli
 * include_replies: Include replies from the user in the dataset [default: False]
 * strip_usertags: Strips out `@` user tags in the tweet text [default: False]
 * strip_hashtags: Strips out `#` hashtags in the tweet text [default: False]
+* sentiment: Adds the specified number of sentiment categories to the output so you can then generate positive/negative tweets changing a parameter [default: 0, possible values: 0, 3, 5, 7]
+* text_format: Specifies the format in which tweets will be returned.  The 'simple' format only returns the tweet text. The 'reply' format returns information on preceding tweets to train an AI that can reply to tweets [default: 'simple', possible values: 'simple', 'reply']
+
+## How does the sentiment functionality work
+
+The sentiment parameter adds a sentiment category to the tweet text.  This information allows the user to train and generate text with different sentiments by changing a parameter.
+
+The output format using the 'simple' text format is the following:
+```txt
+[Sentiment category]
+[Tweet text for the tweet that was collected]
+```
+The sentiment parameter accepts an integer that specifies the number of sentiment categories that are returned.  The sentiment categories for the different possible parameters are the following:
+* 0: No sentiment category is returned
+* 3: POSITIVE, NEUTRAL, NEGATIVE
+* 5: VERY POSITIVE, POSITIVE, NEUTRAL, NEGATIVE, VERY NEGATIVE
+* 7: EXTREMELY POSITIVE, VERY POSITIVE, POSITIVE, NEUTRAL, NEGATIVE, VERY NEGATIVE, EXTREMELY NEGATIVE
+
+
+## How to collect tweets to train an AI that can reply to tweets
+
+The code supports collecting tweets in a format that lets you train an AI that can reply to other tweets.  The output format is based on [the format](https://www.reddit.com/r/SubSimulatorGPT2Meta/comments/caelo0/could_you_give_more_details_on_the_input/et8j3b1/?context=3) used to train the [Subreddit Simulator](https://www.reddit.com/r/SubredditSimulator/) Reddit community.
+
+The output format is the following:
+```txt
+****ARGUMENTS
+ORIGINAL or REPLY: Whether the tweet is an original tweet or a reply
+SENTIMENT: If the sentiment parameter is used, text describing the tweet text's sentiment
+****PARENT
+[Tweet text for the topmost tweet in a reply thread]
+****IN_REPLY_TO
+[Tweet text for the tweet that is being responded to]
+****TWEET
+[Tweet text for the tweet that was collected]
+```
+
+To collect tweets in the reply format, you will need to [create a Twitter app](https://developer.twitter.com/en/docs/basics/apps/overview) so you can obtain access to the Twitter API.  The Twitter API is used by the code to traverse reply threads, which is currently not possible in the Twint library.
+
+Once you create your Twitter app, input your credentials into the ``keys.py`` file shown below:
+
+```py
+keys = {'consumer_key': "",
+        'consumer_secret': "",
+        'access_token': "",
+        'access_token_secret': ""}
+```
+
+After inputting the credentials, you can collect tweets with three sentiment categories by running:
+
+```sh
+python3 download_tweets.py <twitter_username> None True False False False 3 reply
+```
+
+***Note:*** The collection rate of tweets with the 'reply' format will likely be 1 - 2 tweets per second, much slower than the 'simple' format due to the Twitter API's rate limitting.  But, because each tweet has more information, you might need fewer tweets to train your model
 
 ## How to Train an AI on the downloaded tweets
 
@@ -68,7 +120,6 @@ gpt2.generate(sess,
 
 ## Helpful Notes
 
-* Retweets are not included in the downloaded dataset. (which is generally a good thing)
 * You'll need *thousands* of tweets at minimum to feed to the input model for a good generation results. (ideally 1 MB of input text data, although with tweets that hard to achieve)
 * To help you reach the 1 MB of input text data, you can load data from multiple similar Twitter usernames
 * The download will likely end much earlier than the theoretical limit (inferred from the user profile) as the limit includes retweets/replies/whatever cache shennanigans Twitter is employing.
