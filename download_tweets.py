@@ -434,9 +434,15 @@ def is_reply(tweet):
     :param tweet: Twint tweet object whose object will be formated
     """
 
-    # A reply's conversation_id is different than the id_str
+    # If a tweet's conversation_id is different from its id, it's likely a reply
     if tweet.conversation_id != tweet.id_str:
-        return True
+        # If tweet is responding to only the owner, it's a thread, not a reply
+        if len(tweet.reply_to) == 1 and tweet.reply_to[0] == tweet.username:
+            return False
+        else:
+            return True
+    else:
+        return False
 
     # If not a reply to another user, there will only be 1 entry in reply_to
     if len(tweet.reply_to) == 1:
@@ -446,7 +452,7 @@ def is_reply(tweet):
     users = tweet.reply_to[1:]
     conversations = [user["username"].lower() in tweet.tweet.lower() for user in users]
 
-    # If any if the usernames are not present in text, then it must be a reply
+    # If any of the usernames are not present in text, then it must be a reply
     if sum(conversations) < len(users):
         return True
     
