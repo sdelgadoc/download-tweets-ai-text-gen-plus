@@ -13,7 +13,7 @@ You can view examples of AI-generated tweets from datasets retrieved with this t
 First, install the Python script dependencies:
 
 ```sh
-pip3 install twint==2.1.4 fire tqdm textblob tweepy
+pip3 install -r requirements.txt
 ```
 
 Then download the `download_tweets.py` script from this repo.
