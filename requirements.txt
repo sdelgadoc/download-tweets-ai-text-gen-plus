@@ -1,5 +1,5 @@
-twint==2.1.4
 fire
 tqdm
 textblob
 tweepy
+-e git://github.com/sdelgadoc/download-tweets-ai-text-gen-plus.git@development#egg=download-tweets-ai-text-gen-plus
