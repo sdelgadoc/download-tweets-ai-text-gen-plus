@@ -10,13 +10,13 @@ You can view examples of AI-generated tweets from datasets retrieved with this t
 
 ## Usage
 
-First, install the Python script dependencies:
+First, clone this repo onto your system.
+
+Then, install the Python script dependencies:
 
 ```sh
 pip3 install -r requirements.txt
 ```
-
-Then download the `download_tweets.py` script from this repo.
 
 The script is interacted via a command line interface. After `cd`ing into the directory where the script is stored in a terminal, run:
 
