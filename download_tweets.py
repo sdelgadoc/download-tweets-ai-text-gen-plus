@@ -116,9 +116,9 @@ def download_account_tweets(username=None,
     
     # Create a tweepy cursor with or without a limit depending on parameters
     if limit is not None:
-        cursor = tweepy.Cursor(api.search_30_day, environment_name=environment_name, query = "from:" + username).items(limit)
+        cursor = tweepy.Cursor(api.search_full_archive, environment_name=environment_name, query = "from:" + username).items(limit)
     else:
-        cursor = tweepy.Cursor(api.search_30_day, environment_name=environment_name, query = "from:" + username).items()
+        cursor = tweepy.Cursor(api.search_full_archive, environment_name=environment_name, query = "from:" + username).items()
 
     
     # Iterate until the StopIteration exception is hit
