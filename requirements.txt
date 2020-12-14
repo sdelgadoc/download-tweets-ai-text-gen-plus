@@ -1,5 +1,4 @@
-twint==2.1.4
 fire
 tqdm
 textblob
-tweepy
+-e git://github.com/twintproject/tweepy.git#egg=tweepy
