@@ -123,11 +123,13 @@ def download_account_tweets(username=None,
     if limit is not None:
         cursor = tweepy.Cursor(api.search_full_archive, 
                                environment_name=environment_name,
-                               query = "from:" + username).items(limit)
+                               query = "from:" + username,
+                               fromDate="201512220000").items(limit)
     else:
         cursor = tweepy.Cursor(api.search_full_archive,
                                environment_name=environment_name,
-                               query = "from:" + username).items()
+                               query = "from:" + username,
+                               fromDate="201512220000").items()
 
     
     # Iterate until the StopIteration exception is hit
