@@ -40,19 +40,21 @@ environment_name = ""
 The script is run via a command line interface. After `cd`ing into the directory where the script is stored in a terminal, run:
 
 ```sh
-python3 download_tweets.py <twitter_username>
+python3 download_tweets.py <twitter_username> 100
 ```
 
-e.g. If you want to download all tweets (sans retweets/replies/quote tweets) from Twitter user [@santiagodc](https://twitter.com/santiagodc), run:
+e.g. If you want to download 100 tweets (sans retweets/replies/quote tweets) from Twitter user [@santiagodc](https://twitter.com/santiagodc), run:
 
 ```sh
-python3 download_tweets.py santiagodc
+python3 download_tweets.py santiagodc 100
 ```
+*NOTE: The Twittter API's free tier has a collection limit of 5,000 tweets per month, so set a tweet limit to avoid hitting your limit too quickly*
+
 
 The script can can also download tweets from multiple usernames at one time.  To do so, first create a text file (.txt) with the list of usernames.  Then, run script referencing the file name:
 
 ```sh
-python3 download_tweets.py <twitter_usernames_file_name>
+python3 download_tweets.py <twitter_usernames_file_name> 100
 ```
 
 The tweets will be downloaded to a single-column CSV titled `<usernames>_tweets.csv`.
