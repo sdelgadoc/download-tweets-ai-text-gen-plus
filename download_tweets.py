@@ -51,13 +51,12 @@ def download_tweets(username=None,
     
     # If username is a .txt file, append all usernames to usernames list
     if username[-4:] == ".txt":
-        # Open username file and copy usernames to usernames list
         
+        # Open username file and copy usernames to usernames list
         pathfilename = os.path.join(dir_path, filename)
         with open(pathfilename, 'r') as f:
             [usernames.append(username.rstrip('\n')) for username in f]
                 
-    
     #If username is not a .txt file, append username to usernames list
     else:
         filename = username
@@ -67,7 +66,6 @@ def download_tweets(username=None,
     with open(dir_path + '/{}_tweets.csv'.format(filename), 'w', encoding='utf8') as f:
         w = csv.writer(f)
         w.writerow(['tweets']) # gpt-2-simple expects a CSV header by default
-        
         
         for username in usernames:
             download_account_tweets(username, limit, include_replies, 
@@ -98,13 +96,20 @@ def download_account_tweets(username=None,
     :param strip_hashtags: Whether to remove hashtags from the tweets.
     :param sentiment: Number of sentiment categories to include in text.
     :param text_format: Type of output format for the tweet.
-    :param api: Open Twitter API reference
-    :param w: Open file reference to write output
+    :param api: Open Twitter API reference.
+    :param w: Open file reference to write output.
     """
 
     print("Retrieving tweets for @{}...".format(username))
 
-    # Validate that it is a multiple of 40; set total number of tweets
+    # Validate that authentication tokens have been entered
+    assert keys["consumer_key"] != "",  "Enter your consumer key into the keys.py file"
+    assert keys["consumer_secret"] != "",  "Enter your consumer secret key into the keys.py file"
+    assert keys["access_token"] != "", "Enter your access tokens into the keys.py file"
+    assert keys["access_token_secret"] != "", "Enter your access token secret into the keys.py file"
+    assert environment_name != "", "Enter your environment name into the keys.py file"
+
+    # Validate that limit is a multiple of 100; set total number of tweets
     if limit:
         assert limit % 100 == 0, "`limit` must be a multiple of 100."
         
@@ -116,17 +121,22 @@ def download_account_tweets(username=None,
     
     # Create a tweepy cursor with or without a limit depending on parameters
     if limit is not None:
-        cursor = tweepy.Cursor(api.search_full_archive, environment_name=environment_name, query = "from:" + username).items(limit)
+        cursor = tweepy.Cursor(api.search_full_archive, 
+                               environment_name=environment_name,
+                               query = "from:" + username).items(limit)
     else:
-        cursor = tweepy.Cursor(api.search_full_archive, environment_name=environment_name, query = "from:" + username).items()
+        cursor = tweepy.Cursor(api.search_full_archive,
+                               environment_name=environment_name,
+                               query = "from:" + username).items()
 
     
     # Iterate until the StopIteration exception is hit
     while True:
         try:
+            # Get the next tweet from the cursos
             tweet = cursor.next()
             
-            # Get the tweet's full text depending where it is
+            # Get the tweet's full text depending where it is located
             tweet_full_text = ""
             if tweet.truncated:
                 tweet_full_text = tweet.extended_tweet["full_text"]
@@ -136,7 +146,7 @@ def download_account_tweets(username=None,
             # If the tweet is not a retweet
             if tweet_full_text[:3] != "RT ":
             
-                # Do not filter out replies
+                # If we do not filter out replies
                 if include_replies:
                     
                     tweet_text = format_text(tweet, strip_usertags,
@@ -149,7 +159,7 @@ def download_account_tweets(username=None,
                         w.writerow([tweet_text])
                         
                 
-                # Filter out replies
+                # If we do filter out replies
                 else:
                     
                     if not is_reply(tweet):
