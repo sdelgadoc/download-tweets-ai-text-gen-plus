@@ -40,8 +40,8 @@ def download_tweets(username=None,
     usernames = []
     filename = username
     api = None
-	
-	# Authenticate with the Twitter API
+
+    # Authenticate with the Twitter API
     auth = tweepy.OAuthHandler(keys["consumer_key"], keys["consumer_secret"])
     auth.set_access_token(keys["access_token"], keys["access_token_secret"])
     api = tweepy.API(auth)
