@@ -20,7 +20,7 @@ pip3 install -r requirements.txt
 
 Previous versions of this code used scraping libraries to collect tweets.  Since then, Twitter has made scraping harder while providing more [robust tweet collection API's](https://developer.twitter.com/en/docs/twitter-api/premium).  In response, we ported this code to run only with the Twitter's API.
 
-To continue the setup, [create a Twitter app](https://developer.twitter.com/en/docs/basics/apps/overview) so you can obtain access to the Twitter API.  Once you create an app, [generate access tokens](https://developer.twitter.com/ja/docs/basics/authentication/guides/access-tokens) and input them into the section of the `keys.py` file shown below.
+To continue the setup, [create a Twitter app](https://developer.twitter.com/en/docs/basics/apps/overview) so you can obtain access to the Twitter API.  Once you create an app, [generate access tokens](https://developer.twitter.com/ja/docs/basics/authentication/guides/access-tokens), and input them into the section of the `keys.py` file shown below.
 
 ```py
 keys = {'consumer_key': "",
