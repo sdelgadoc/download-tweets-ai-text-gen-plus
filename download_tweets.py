@@ -174,10 +174,10 @@ def download_account_tweets(username=None,
                             # Write tweet text to file
                             w.writerow([tweet_text])
                             
-                # Update the progress bar with one iteration
-                pbar.update(1)
-                # Pause to avoid hitting rate limits
-                sleep(api_delay)
+            # Update the progress bar with one iteration
+            pbar.update(1)
+            # Pause to avoid hitting rate limits
+            sleep(api_delay)
                 
 
         except StopIteration:
