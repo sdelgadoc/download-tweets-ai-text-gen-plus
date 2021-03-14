@@ -1,4 +1,4 @@
 fire
 tqdm
 textblob
--e git://github.com/tweepy/tweepy.git#egg=tweepy
+tweepy
