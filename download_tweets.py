@@ -122,12 +122,12 @@ def download_account_tweets(username=None,
     # Create a tweepy cursor with or without a limit depending on parameters
     if limit is not None:
         cursor = tweepy.Cursor(api.search_full_archive, 
-                               environment_name=environment_name,
+                               label=environment_name,
                                query = "from:" + username,
                                fromDate="200603220000").items(limit)
     else:
         cursor = tweepy.Cursor(api.search_full_archive,
-                               environment_name=environment_name,
+                               label=environment_name,
                                query = "from:" + username,
                                fromDate="200603220000").items()
 
