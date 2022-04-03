@@ -29,10 +29,10 @@ keys = {'consumer_key': "",
         'access_token_secret': ""}
 ```
 
-Finally, go to the Twitter API's [Dev environments page](https://developer.twitter.com/en/account/environments), generate a Dev environment for the Full Archive API, and input the environment's name into the section of the `keys.py` file shown below.
+Finally, go to the Twitter API's [Dev environments page](https://developer.twitter.com/en/account/environments), generate a Dev environment for the Full Archive API, and input the environment's name into `label` section of the `keys.py` file shown below.
 
 ```py
-environment_name = ""
+label = ""
 ```
 
 ## Usage
