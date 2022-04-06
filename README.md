@@ -29,10 +29,10 @@ keys = {'consumer_key': "",
         'access_token_secret': ""}
 ```
 
-Finally, go to the Twitter API's [Dev environments page](https://developer.twitter.com/en/account/environments), generate a Dev environment for the Full Archive API, and input the environment's name into the section of the `keys.py` file shown below.
+Finally, go to the Twitter API's [Dev environments page](https://developer.twitter.com/en/account/environments), generate a Dev environment for the Full Archive API, and input the environment's name into `label` section of the `keys.py` file shown below.
 
 ```py
-environment_name = ""
+label = ""
 ```
 
 ## Usage
@@ -68,6 +68,7 @@ The parameters you can pass to the command line interface (positionally or expli
 * strip_hashtags: Strips out `#` hashtags in the tweet text [default: False]
 * sentiment: Adds the specified number of sentiment categories to the output so you can then generate positive/negative tweets changing a parameter [default: 0, possible values: 0, 3, 5, 7]
 * text_format: Specifies the format in which tweets will be returned.  The 'simple' format only returns the tweet text. The 'reply' format returns information on preceding tweets to train an AI that can reply to tweets [default: 'simple', possible values: 'simple', 'reply']
+* timeframe: Specifies when to start grabbing tweets from [default: March 22nd, 2006]
 
 ## How does the sentiment functionality work
 
@@ -87,7 +88,7 @@ The sentiment parameter accepts an integer that specifies the number of sentimen
 
 ## How does the text_format functionality work
 
-The code supports collecting tweets in a format for trainining an AI that can reply to other tweets.  The output format is based on [the format](https://www.reddit.com/r/SubSimulatorGPT2Meta/comments/caelo0/could_you_give_more_details_on_the_input/et8j3b1/?context=3) used to train the [Subreddit Simulator](https://www.reddit.com/r/SubredditSimulator/) Reddit community.
+The code supports collecting tweets in a format for training an AI that can reply to other tweets.  The output format is based on [the format](https://www.reddit.com/r/SubSimulatorGPT2Meta/comments/caelo0/could_you_give_more_details_on_the_input/et8j3b1/?context=3) used to train the [Subreddit Simulator](https://www.reddit.com/r/SubredditSimulator/) Reddit community.
 
 The output format is the following:
 ```txt
@@ -107,6 +108,11 @@ To collect tweets with this reply format by running the following statement:
 ```sh
 python3 download_tweets.py <twitter_username> None True False False False 3 reply
 ```
+
+## How does the timeframe functionality work
+
+By specifying a date, the script will download tweets from the value `timeframe` to the present. It will by default download every tweet from a given user (or users) starting from the day March 22nd, 2006, the day the first tweet ever was sent.
+The `timeframe` parameter is precise, in which it lets you put in a desired year, month, day, hour, and minute to download tweets from, in that order. The format the `timeframe` parameter accepts looks like `YYYYMMDDHHMM`.  
 
 ## How to Train an AI on the downloaded tweets
 
@@ -130,8 +136,8 @@ gpt2.generate(sess,
 
 * You'll need *thousands* of tweets at minimum to feed to the input model for a good generation results. (ideally 1 MB of input text data, although with tweets that hard to achieve)
 * To help you reach the 1 MB of input text data, you can load data from multiple similar Twitter usernames
-* The download will likely end much earlier than the theoretical limit (inferred from the user profile) as the limit includes retweets/replies/whatever cache shennanigans Twitter is employing.
-* The legalities of distributing downloaded tweets is ambigious, therefore it's recommended avoiding commiting raw Twitter data to GitHub, and is the reason examples of such data is not included in this repo. (AI-generated tweets themselves likely fall under derivative work/parody protected by Fair Use)
+* The download will likely end much earlier than the theoretical limit (inferred from the user profile) as the limit includes retweets/replies/whatever cache shenanigans Twitter is employing.
+* The legalities of distributing downloaded tweets is ambiguous, therefore it's recommended avoiding committing raw Twitter data to GitHub, and is the reason examples of such data is not included in this repo. (AI-generated tweets themselves likely fall under derivative work/parody protected by Fair Use)
 
 ## Maintainer
 

@@ -4,4 +4,4 @@ keys = {'consumer_key': "",
         'access_token': "",
         'access_token_secret': ""}
 
-environment_name = ""
+label = ""
