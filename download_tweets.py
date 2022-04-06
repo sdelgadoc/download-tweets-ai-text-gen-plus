@@ -13,27 +13,27 @@ api_delay = 2
 
 def download_tweets(username=None,
                     limit=None,
-                    timeframe="200603220000",
                     include_replies=False,
                     include_links=False,
                     strip_usertags=False,
                     strip_hashtags=False,
                     sentiment = 0,
-                    text_format = "simple"):
+                    text_format = "simple",
+                    timeframe="200603220000"):
     """
     Download public Tweets from one or multiple Twitter accounts
     into a format suitable for training with AI text generation tools.
     :param username: Twitter @ username to gather tweets or .txt file name
         with multiple usernames.
     :param limit: # of tweets to gather; None for all tweets.
-    :param timeframe: The date to start gathering tweets from, oldest first.
-        Defaults to March 22, 2006. Formatted as YYYYMMDDHHMM.
     :param include_replies: Whether to include replies to other tweets.
     :param include_links: Whether to include tweets with links.
     :param strip_usertags: Whether to remove user tags from the tweets.
     :param strip_hashtags: Whether to remove hashtags from the tweets.
     :param sentiment: Number of sentiment categories to include in text.
     :param text_format: Type of output format for the tweet.
+    :param timeframe: The date to start gathering tweets from, oldest first.
+        Defaults to March 22, 2006. Formatted as YYYYMMDDHHMM.
     """
 
     # Validate that a username or .txt file name is specified
@@ -79,13 +79,13 @@ def download_tweets(username=None,
 
 def download_account_tweets(username=None,
                             limit=None,
-                            timeframe="200603220000",
                             include_replies=False,
                             include_links=False,
                             strip_usertags=False,
                             strip_hashtags=False,
                             sentiment = 0,
                             text_format = "simple",
+                            timeframe="200603220000",
                             api = None,
                             w = None):
     """
@@ -94,14 +94,14 @@ def download_account_tweets(username=None,
     :param username: Twitter @ username to gather tweets or .txt file name
         with multiple usernames.
     :param limit: # of tweets to gather; None for all tweets.
-    :param timeframe: The date to start gathering tweets from, oldest first.
-        Defaults to March 22, 2006. Formatted as YYYYMMDDHHMM.
     :param include_replies: Whether to include replies to other tweets.
     :param include_links: Whether to include tweets with links.
     :param strip_usertags: Whether to remove user tags from the tweets.
     :param strip_hashtags: Whether to remove hashtags from the tweets.
     :param sentiment: Number of sentiment categories to include in text.
     :param text_format: Type of output format for the tweet.
+    :param timeframe: The date to start gathering tweets from, oldest first.
+        Defaults to March 22, 2006. Formatted as YYYYMMDDHHMM.
     :param api: Open Twitter API reference.
     :param w: Open file reference to write output.
     """
