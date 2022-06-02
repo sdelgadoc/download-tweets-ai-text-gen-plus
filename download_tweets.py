@@ -71,10 +71,10 @@ def download_tweets(username=None,
         w.writerow(['tweets']) # gpt-2-simple expects a CSV header by default
 
         for username in usernames:
-            download_account_tweets(username, limit, timeframe, include_replies,
+            download_account_tweets(username, limit, include_replies,
                                     strip_usertags, strip_hashtags,
                                     include_links, sentiment, text_format,
-                                    api, w)
+                                    timeframe, api, w)
 
 
 def download_account_tweets(username=None,
