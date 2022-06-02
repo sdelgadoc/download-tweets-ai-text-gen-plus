@@ -287,7 +287,7 @@ def format_text(tweet,
                 sleep(api_delay)
 
             # If tweet is non-existant, move on
-            except tweepy.error.TweepError:
+            except tweepy.errors.TweepyException:
                 pass
 
         # If the replied to tweet was found, find parent
@@ -302,7 +302,7 @@ def format_text(tweet,
                 sleep(api_delay)
 
             # If tweet is non-existant, move on
-            except tweepy.error.TweepError:
+            except tweepy.errors.TweepyException:
                 # If you can't find the parent tweet, assign reply_to to parent
                 parent_tweet = in_reply_to_tweet
 
